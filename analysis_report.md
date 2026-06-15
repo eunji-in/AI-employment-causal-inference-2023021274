@@ -158,7 +158,7 @@ knowledge_graph/
 
 | 노드 | 역할 | 근거 기사 |
 |------|------|----------|
-| AI기술발전 | 치료변수 (Treatment) | article_01~10, 16~17 |
+| AI기술발전 | 치료변수 (Treatment) | article_01-10, 16-17 |
 | 기업자동화 | 매개변수 (Mediator) | article_02, 04, 05, 08 |
 | 신입채용감소 | 매개변수 (Mediator) | article_01, 08, 10, 16 |
 | 청년취업불안 | 결과변수 (Outcome) | article_15, 16, 20 |
