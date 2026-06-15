@@ -1,0 +1,11 @@
+﻿source,target,edge_type,edge_source,description
+AI기술발전,기업자동화,main,asserted,기사에서 직접 주장된 주 인과경로
+기업자동화,신입채용감소,main,asserted,기사에서 직접 주장된 주 인과경로
+신입채용감소,청년취업불안,main,asserted,기사에서 직접 주장된 주 인과경로
+경기침체,신입채용감소,confound,analyst_added,분석가가 식별한 backdoor 교란경로 (do-calculus 차단 대상)
+경기침체,청년취업불안,confound,analyst_added,분석가가 식별한 backdoor 교란경로 (do-calculus 차단 대상)
+산업구조변화,신입채용감소,confound,analyst_added,분석가가 식별한 backdoor 교란경로 (do-calculus 차단 대상)
+산업구조변화,기업자동화,confound,analyst_added,분석가가 식별한 backdoor 교란경로 (do-calculus 차단 대상)
+스타트업투자감소,신입채용감소,confound,analyst_added,분석가가 식별한 backdoor 교란경로 (do-calculus 차단 대상)
+AI기술발전,기업생산성향상,positive,asserted,기사에서 주장된 긍정적 매개경로
+기업생산성향상,신입채용감소,positive,analyst_added,분석가가 식별한 긍정 매개 → 신입 채용 억제 경로

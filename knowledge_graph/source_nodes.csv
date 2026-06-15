@@ -1,0 +1,21 @@
+﻿article_id,title,source,date,category
+article_01,"AI가 공격하는 건 경력 아닌 '신입'···""활용 기업 신입 채용 40% 감소""",경향신문,2025-09-18,asserted_causation
+article_02,AI가 중기 사무직 일자리도 삼켰나,경향신문,2026-04-23,asserted_causation
+article_03,AI發 일자리 감소 빨라졌다,MBC/한국경제,2024-12-24,asserted_causation
+article_04,회계사도 '취업 N수'…청년 울리는 AI發 일자리 잠식,파이낸셜뉴스,2025-12-21,asserted_causation
+article_05,AI 침공 현실로…화이트칼라 일자리부터 삼킨다,애틀랜타중앙일보,2025-10-30,asserted_causation
+article_06,2년 뒤 AI의 화이트칼라 직무 대체율 70% 넘어,뉴스투데이,2025-04-25,asserted_causation
+article_07,챗GPT 출시 이후 가장 줄어든 직업은 글쓰기…번역·고객서비스 급감,AI타임스,2024-02-26,asserted_causation
+article_08,전 세계 기업 3년간 신입 채용 줄인다…韓도 포함,ZDNet Korea,2025-11-20,asserted_causation
+article_09,번역가·비서·리포터…GPT로 대체 가능한 국내 일자리 약 10%,한국경제,2024-12-19,asserted_causation
+article_10,주니어 채용 절반 사라졌다 — 2025 채용시장 분석,캔디드 블로그,2026-02-12,asserted_causation
+article_11,AI 많이 쓰는 직무서 청년 고용 줄었다…단정 이르다,서울경제,2026-02-26,identified_causation_absent
+article_12,AI 확산으로 청년 일자리 감소? 단정 이르다,시사저널,2026-02-25,identified_causation_absent
+article_13,AI로 일자리 사라진다? 과도한 공포,경향신문,2026-04-23,identified_causation_absent
+article_14,한국은행 근로자 절반 이상 생성형 AI 활용…생산성 효과 1%,네이트뉴스/아시아투데이,2025-08-18,identified_causation_absent
+article_15,2030세대 7명 중 1명 그냥 쉰다…AI에 산업침체로 양질 일자리 줄어,파이낸셜뉴스,2026-04-29,confounder
+article_16,아들딸은 노는데 60대만 일한다?…취업난 이유 봤더니,위드뉴스,2026-03-24,confounder
+article_17,2025년 상반기 채용공고 3% 감소…IT·건설 하락,뉴스투데이,2025-06-13,confounder
+article_18,AI와 일자리의 미래,삼일PwC,2025-01-01,confounder
+article_19,AI·머신러닝 전문가 수요 35% 이상 증가 전망,AI신문,2023-05-01,counter_argument
+article_20,신입 사원 대신 로봇? AI 시대 Z세대의 일자리 위기,CIO Korea,2025-08-07,counter_argument
