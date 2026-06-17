@@ -495,14 +495,14 @@ def build_causal_dag():
     ]
 
     pos = {
-        "AI기술발전":       ( 0.5,  0.5),
-        "기업자동화":       ( 3.5,  0.5),
-        "신입채용감소":     ( 6.5,  0.5),
-        "청년취업불안":     ( 9.5,  0.5),
-        "경기침체":         ( 1.5,  3.5),
-        "산업구조변화":     ( 5.0,  3.5),
-        "스타트업투자감소": ( 8.0,  2.8),
-        "기업생산성향상":   ( 3.5, -2.5),
+        "AI기술발전":       ( 0.0,  0.0),
+        "기업자동화":       ( 4.5,  0.0),
+        "신입채용감소":     ( 9.0,  0.0),
+        "청년취업불안":     (13.5,  0.0),
+        "경기침체":         ( 1.5,  5.0),
+        "산업구조변화":     ( 6.5,  5.0),
+        "스타트업투자감소": (10.5,  4.0),
+        "기업생산성향상":   ( 4.5, -4.0),
     }
 
     role_colors = {
@@ -526,15 +526,15 @@ def build_causal_dag():
     for s, t, etype, esrc in dag_edges:
         G.add_edge(s, t, etype=etype, edge_source=esrc)
 
-    fig, ax = plt.subplots(figsize=(22, 14))
+    fig, ax = plt.subplots(figsize=(24, 15))
     ax.set_facecolor("#FAFAFA")
     fig.patch.set_facecolor("#FAFAFA")
-    ax.set_xlim(-1.5, 12.5)
-    ax.set_ylim(-5.0, 6.0)
+    ax.set_xlim(-2.5, 16.5)
+    ax.set_ylim(-6.5, 7.5)
     ax.axis("off")
 
     # ── Draw circles ─────────────────────────────────────────────────────
-    r = 1.05
+    r = 1.55
     for key, (x, y, label, color) in {
         nid: (pos[nid][0], pos[nid][1],
               next(lab for n, lab, _ in dag_nodes if n == nid),
@@ -544,7 +544,7 @@ def build_causal_dag():
         circle = plt.Circle((x, y), r, color=color, alpha=0.88, zorder=3)
         ax.add_patch(circle)
         ax.text(x, y, label, ha="center", va="center",
-                fontsize=11.0, fontweight="bold", color="white",
+                fontsize=13.0, fontweight="bold", color="white",
                 zorder=4, multialignment="center")
 
     # ── Draw arrows ───────────────────────────────────────────────────────
