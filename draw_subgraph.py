@@ -1,154 +1,173 @@
 """
-PPT용 서브그래프 — 고정 레이아웃 (14×11 인치)
+PPT용 서브그래프 — 노드를 텍스트 길이에 맞는 박스로 그리기
 """
-import koreanize_matplotlib  # noqa: F401
+import koreanize_matplotlib  # noqa
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import networkx as nx
+import numpy as np
 
-OUT = "/home/eunji/project/knowledge_graph/subgraph_ppt.png"
+OUT   = "/home/eunji/project/knowledge_graph/subgraph_ppt.png"
+KFONT = "NanumGothic"
 
-# ── 엣지 정의: (원인, 결과, 폴라리티, 그룹) ───────────────────────
-EDGES = [
-    # AI 직접 대체
-    ("생성형AI 채택",          "신입 고용 감소",                "neg", "AI"),
-    ("AI 주니어\n업무 대체",   "주니어 채용 51% 감소",          "neg", "AI"),
-    ("초급 업무\nAI 대체",     "신입채용 감소\n(Z세대 취업불안)","neg", "AI"),
-    ("AI 고노출\n업종 확산",   "청년 일자리\n21만개 감소",       "neg", "AI"),
-    # 채용 구조 변화
-    ("AI 도입 +\n비용절감 압박","대기업\n대규모 감원",           "neg", "채용"),
-    ("대기업 감원 +\n신입 축소","취업사다리\n소멸",              "neg", "채용"),
-    ("AI 단순업무\n자동화",     "글로벌 기업 66%\n초급 채용 축소","neg","채용"),
-    # 교란변수
-    ("경기침체",               "채용공고 감소",                 "neg", "conf"),
-    ("스타트업 투자\n20% 감소", "2024 채용\n역대 최저",          "neg", "conf"),
-    # 긍정 반론
-    ("AI 생산성\n향상(장기)",   "노동 수요\n확대 가능성",         "pos", "pos"),
-    ("AI 기술 채택",           "AI·ML 전문가\n수요 35%↑",       "pos", "pos"),
+# ── 노드 (라벨, 레이어, 역할) ─────────────────────────────────────
+NODES = [
+    ("생성형AI 채택",          0, "cause"),
+    ("AI 주니어 업무 대체",    0, "cause"),
+    ("초급업무 AI 대체",       0, "cause"),
+    ("AI 고노출 업종 확산",    0, "cause"),
+    ("AI 도입+비용절감 압박",  0, "cause"),
+    ("대기업 대규모 감원",     1, "med"),
+    ("신입 고용 감소",         2, "out"),
+    ("주니어 채용 51% 감소",   2, "out"),
+    ("신입채용 감소\nZ세대 불안", 2, "out"),
+    ("청년 일자리\n21만개 감소", 2, "out"),
+    ("취업사다리 소멸",        2, "out"),
+    ("경기침체",               3, "conf"),
+    ("스타트업 투자 감소",     3, "conf"),
 ]
 
-# ── 색상 ──────────────────────────────────────────────────────────
-CAUSE_COLOR = {"AI": "#1A3A5C", "채용": "#1F618D",
-               "conf": "#784212", "pos": "#1E8449"}
-EFF_COLOR   = {"neg": "#B03A2E", "pos": "#1E8449"}
-ARR_COLOR   = {"neg": "#E74C3C", "pos": "#27AE60"}
-BG_COLOR    = {"AI": "#D6EAF8", "채용": "#D5D8DC",
-               "conf": "#FAE5D3", "pos": "#D5F5E3"}
-GRP_LABEL   = {"AI": "AI 직접 대체 경로", "채용": "채용 구조 변화",
-               "conf": "교란변수 (Confounder)", "pos": "긍정 경로 (반론)"}
+EDGES = [
+    ("생성형AI 채택",        "신입 고용 감소",          "neg"),
+    ("AI 주니어 업무 대체",  "주니어 채용 51% 감소",    "neg"),
+    ("초급업무 AI 대체",     "신입채용 감소\nZ세대 불안","neg"),
+    ("AI 고노출 업종 확산",  "청년 일자리\n21만개 감소","neg"),
+    ("AI 도입+비용절감 압박","대기업 대규모 감원",       "neg"),
+    ("대기업 대규모 감원",   "취업사다리 소멸",          "neg"),
+    ("경기침체",             "신입 고용 감소",           "neg"),
+    ("스타트업 투자 감소",   "신입 고용 감소",           "neg"),
+]
 
-# ── 고정 Y 위치 계산 ──────────────────────────────────────────────
-SPACING   = 1.05   # 항목 간 y 간격
-GROUP_GAP = 0.60   # 그룹 간 추가 간격
-ORDER     = ["AI", "채용", "conf", "pos"]
+role_color = {
+    "cause": "#1B4F72",
+    "conf":  "#7D6608",
+    "med":   "#4A235A",
+    "out":   "#922B21",
+}
+arr_color = {"neg": "#C0392B", "pos": "#1E8449"}
 
-# 그룹별 항목
-from collections import OrderedDict
-grp_items = OrderedDict((g, []) for g in ORDER)
-for cause, eff, pol, grp in EDGES:
-    grp_items[grp].append((cause, eff, pol))
+# ── 그래프 ────────────────────────────────────────────────────────
+G = nx.DiGraph()
+for lbl, lay, role in NODES:
+    G.add_node(lbl, layer=lay, role=role)
+for s, t, pol in EDGES:
+    G.add_edge(s, t, pol=pol)
 
-# y 좌표 배정
-cy_map, ey_map = {}, {}
-grp_spans = {}
-y_cur = 0.0
+# ── 노드 위치 ─────────────────────────────────────────────────────
+rng = np.random.default_rng(42)
+X = {0: 0.0, 1: 3.5, 2: 7.0, 3: 3.0}   # 레이어 X 좌표
 
-for grp in ORDER:
-    items = grp_items[grp]
-    ys = []
-    for cause, eff, pol in items:
-        ys.append(-y_cur)
-        cy_map[cause] = -y_cur
-        ey_map[eff]   = -y_cur
-        y_cur += SPACING
-    grp_spans[grp] = (min(ys), max(ys))
-    y_cur += GROUP_GAP
+layer_nodes = {0: [], 1: [], 2: [], 3: []}
+for lbl, lay, role in NODES:
+    layer_nodes[lay].append(lbl)
 
-Y_MIN = -y_cur + GROUP_GAP + 0.3
-Y_MAX = 1.0
+pos = {}
+for lay, nodes in layer_nodes.items():
+    n = len(nodes)
+    for i, lbl in enumerate(nodes):
+        y = (n - 1) / 2.0 - i
+        jx = rng.uniform(-0.12, 0.12) if lay != 1 else 0
+        jy = rng.uniform(-0.06, 0.06)
+        # 교란변수는 아래쪽에 배치
+        base_y = y * 1.2 if lay != 3 else y * 1.0 - 4.5
+        pos[lbl] = (X[lay] + jx, base_y + jy)
+
+# ── 박스 크기 계산 (텍스트 길이 기반) ────────────────────────────
+def box_size(lbl):
+    lines = lbl.split("\n")
+    max_chars = max(len(l) for l in lines)
+    n_lines   = len(lines)
+    w = max(max_chars * 0.18 + 0.3, 1.6)
+    h = n_lines * 0.38 + 0.22
+    return w, h
 
 # ── 그리기 ────────────────────────────────────────────────────────
-fig, ax = plt.subplots(figsize=(14, 11))
-ax.set_facecolor("#F7F9FC")
-fig.patch.set_facecolor("#F7F9FC")
-ax.set_xlim(-0.62, 1.62)
-ax.set_ylim(Y_MIN, Y_MAX)
+fig, ax = plt.subplots(figsize=(16, 11))
+ax.set_facecolor("#F5F7FA")
+fig.patch.set_facecolor("#F5F7FA")
 ax.axis("off")
 
-NW, NH = 0.30, 0.62   # 노드 박스 크기
+# 교란변수 구분선
+ax.axhline(-3.2, color="#B7950B", lw=1.0, ls="--", alpha=0.55)
+ax.text(8.5, -3.35, "교란변수 (Confounders) ↓",
+        fontsize=8.5, color="#9A7D0A", fontstyle="italic",
+        fontfamily=KFONT, ha="right", va="top")
 
-def draw_box(cx, cy, label, fc, fs=9.2):
-    box = mpatches.FancyBboxPatch(
-        (cx - NW/2, cy - NH/2), NW, NH,
-        boxstyle="round,pad=0.04",
-        facecolor=fc, edgecolor="white", linewidth=1.5, zorder=3, alpha=0.93)
-    ax.add_patch(box)
-    ax.text(cx, cy, label, ha="center", va="center",
-            fontsize=fs, color="white", fontweight="bold",
-            zorder=4, linespacing=1.3, multialignment="center")
+# 엣지 — 노드 박스 경계에서 출발/도착하도록 invisible node로 먼저 그리기
+# (networkx 엣지는 pos 중심 기준으로 그려짐 → min_margin으로 조정)
+for s, t, pol in EDGES:
+    ws, hs = box_size(s)
+    wt, ht = box_size(t)
+    margin_s = max(ws, hs) * 28   # pixel 단위 근사
+    margin_t = max(wt, ht) * 28
+    sx, sy = pos[s]; tx, ty = pos[t]
+    is_conf = G.nodes[s]["role"] == "conf"
+    rad = 0.25 if is_conf else 0.05
+    ax.annotate(
+        "", xy=(tx, ty), xytext=(sx, sy),
+        arrowprops=dict(
+            arrowstyle="-|>",
+            color=arr_color[pol],
+            lw=1.6,
+            mutation_scale=10,
+            shrinkA=max(ws, hs) * 38,
+            shrinkB=max(wt, ht) * 38,
+            connectionstyle=f"arc3,rad={rad}",
+        ),
+        zorder=2,
+    )
 
-# 그룹 배경
-for grp in ORDER:
-    y_top, y_bot = grp_spans[grp]
-    pad = SPACING * 0.42
+# 노드 박스 + 라벨
+for lbl, lay, role in NODES:
+    x, y = pos[lbl]
+    w, h = box_size(lbl)
+    fc = role_color[role]
     rect = mpatches.FancyBboxPatch(
-        (-0.58, y_bot - pad), 2.16, (y_top - y_bot + pad*2),
-        boxstyle="round,pad=0.04",
-        facecolor=BG_COLOR[grp], edgecolor="#BFC9CA",
-        linewidth=0.8, zorder=0, alpha=0.45)
+        (x - w/2, y - h/2), w, h,
+        boxstyle="round,pad=0.06",
+        facecolor=fc, edgecolor="white",
+        linewidth=1.4, zorder=3, alpha=0.93)
     ax.add_patch(rect)
-    ax.text(-0.55, (y_top + y_bot) / 2,
-            GRP_LABEL[grp], ha="left", va="center",
-            fontsize=8, color="#555", fontstyle="italic", zorder=1)
+    ax.text(x, y, lbl,
+            ha="center", va="center",
+            fontsize=9.0, fontweight="bold",
+            color="white", fontfamily=KFONT,
+            multialignment="center", zorder=4,
+            linespacing=1.4)
 
-# 화살표
-X_CAUSE = 0.12
-X_EFF   = 0.88
-
-for cause, eff, pol, grp in EDGES:
-    cy_v = cy_map[cause]; ey_v = ey_map[eff]
-    col = ARR_COLOR[pol]
-    ax.annotate("",
-        xy=(X_EFF - NW/2 - 0.01, ey_v),
-        xytext=(X_CAUSE + NW/2 + 0.01, cy_v),
-        arrowprops=dict(arrowstyle="-|>", color=col,
-                        lw=1.7, mutation_scale=15,
-                        connectionstyle="arc3,rad=0.0"),
-        zorder=2)
-
-# 노드 그리기
-drawn_c, drawn_e = set(), set()
-for cause, eff, pol, grp in EDGES:
-    if cause not in drawn_c:
-        draw_box(X_CAUSE, cy_map[cause], cause, CAUSE_COLOR[grp])
-        drawn_c.add(cause)
-    if eff not in drawn_e:
-        draw_box(X_EFF, ey_map[eff], eff, EFF_COLOR[pol], fs=8.8)
-        drawn_e.add(eff)
-
-# 헤더
-for xh, lbl, fc in [(X_CAUSE, "원인 / 메커니즘", "#1A3A5C"),
-                     (X_EFF,   "결과",            "#922B21")]:
-    ax.text(xh, 0.82, lbl, ha="center", va="center",
-            fontsize=11.5, fontweight="bold", color="white",
-            bbox=dict(boxstyle="round,pad=0.35", fc=fc, ec="none"), zorder=5)
-ax.text(0.5, 0.82, "→", ha="center", va="center", fontsize=16, color="#666")
+# 컬럼 헤더
+for xv, txt, fc in [(0.0, "원인", "#1B4F72"),
+                     (3.5, "매개", "#4A235A"),
+                     (7.0, "결과", "#922B21")]:
+    ax.text(xv, 3.8, txt, ha="center",
+            fontsize=11.5, fontweight="bold",
+            color="white", fontfamily=KFONT,
+            bbox=dict(boxstyle="round,pad=0.35",
+                      fc=fc, ec="none"), zorder=5)
 
 # 범례
 leg = [
-    mpatches.Patch(color="#1A3A5C", label="AI 직접 대체"),
-    mpatches.Patch(color="#1F618D", label="채용 구조 변화"),
-    mpatches.Patch(color="#784212", label="교란변수"),
-    mpatches.Patch(color="#1E8449", label="긍정 경로 (반론)"),
-    mpatches.Patch(color="#B03A2E", label="부정 결과"),
-    mpatches.Patch(color="#1E8449", label="긍정 결과"),
+    mpatches.Patch(color="#1B4F72", label="원인 (AI)"),
+    mpatches.Patch(color="#7D6608", label="교란변수"),
+    mpatches.Patch(color="#4A235A", label="매개변수"),
+    mpatches.Patch(color="#922B21", label="결과"),
+    mpatches.Patch(color="#C0392B", label="부정 인과"),
 ]
 ax.legend(handles=leg, loc="lower right", fontsize=9,
-          framealpha=0.9, title="유형", title_fontsize=9.5)
+          framealpha=0.88, title="유형", title_fontsize=9.5,
+          prop={"family": KFONT})
 
 ax.set_title(
     "AI기술발전 → 청년취업불안  핵심 인과 경로\n"
-    "(Knowledge Graph 서브그래프 · 11개 인과관계 · 기사 20편)",
-    fontsize=13, fontweight="bold", pad=10, color="#1A3A5C")
+    "(Knowledge Graph 서브그래프 · 8개 인과관계 · 기사 20편)",
+    fontsize=13, fontweight="bold", pad=14,
+    color="#1B4F72", fontfamily=KFONT)
+
+# 축 범위 자동 조정
+all_x = [p[0] for p in pos.values()]
+all_y = [p[1] for p in pos.values()]
+ax.set_xlim(min(all_x) - 1.5, max(all_x) + 1.5)
+ax.set_ylim(min(all_y) - 1.0, max(all_y) + 1.0)
 
 plt.tight_layout()
 plt.savefig(OUT, dpi=130, bbox_inches="tight")
