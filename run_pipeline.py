@@ -496,13 +496,13 @@ def build_causal_dag():
 
     pos = {
         "AI기술발전":       ( 0.0,  0.0),
-        "기업자동화":       ( 4.5,  0.0),
-        "신입채용감소":     ( 9.0,  0.0),
-        "청년취업불안":     (13.5,  0.0),
-        "경기침체":         ( 1.5,  5.0),
-        "산업구조변화":     ( 6.5,  5.0),
-        "스타트업투자감소": (10.5,  4.0),
-        "기업생산성향상":   ( 4.5, -4.0),
+        "기업자동화":       ( 5.5,  0.0),
+        "신입채용감소":     (11.0,  0.0),
+        "청년취업불안":     (16.5,  0.0),
+        "경기침체":         ( 1.5,  6.0),
+        "산업구조변화":     ( 7.5,  6.0),
+        "스타트업투자감소": (12.5,  5.0),
+        "기업생산성향상":   ( 5.5, -5.5),
     }
 
     role_colors = {
@@ -526,15 +526,15 @@ def build_causal_dag():
     for s, t, etype, esrc in dag_edges:
         G.add_edge(s, t, etype=etype, edge_source=esrc)
 
-    fig, ax = plt.subplots(figsize=(24, 15))
+    fig, ax = plt.subplots(figsize=(26, 16))
     ax.set_facecolor("#FAFAFA")
     fig.patch.set_facecolor("#FAFAFA")
-    ax.set_xlim(-2.5, 16.5)
-    ax.set_ylim(-6.5, 7.5)
+    ax.set_xlim(-3.0, 20.0)
+    ax.set_ylim(-8.5, 9.5)
     ax.axis("off")
 
     # ── Draw circles ─────────────────────────────────────────────────────
-    r = 1.55
+    r = 2.0
     for key, (x, y, label, color) in {
         nid: (pos[nid][0], pos[nid][1],
               next(lab for n, lab, _ in dag_nodes if n == nid),
@@ -544,7 +544,7 @@ def build_causal_dag():
         circle = plt.Circle((x, y), r, color=color, alpha=0.88, zorder=3)
         ax.add_patch(circle)
         ax.text(x, y, label, ha="center", va="center",
-                fontsize=13.0, fontweight="bold", color="white",
+                fontsize=15.0, fontweight="bold", color="white",
                 zorder=4, multialignment="center")
 
     # ── Draw arrows ───────────────────────────────────────────────────────
@@ -570,10 +570,10 @@ def build_causal_dag():
         draw_arrow(s, t, etype, esrc)
 
     # ── Edge-source annotation box ─────────────────────────────────────────
-    ax.text(5.5, -3.8,
+    ax.text(14.0, -7.5,
             "실선 화살표 = 기사에서 주장된 경로 (asserted in source text)\n"
             "점선 화살표 = 분석가가 식별한 backdoor path (analyst-added)",
-            ha="center", va="center", fontsize=8.5,
+            ha="center", va="center", fontsize=9.5,
             bbox=dict(boxstyle="round,pad=0.5", fc="#FFF9E6", ec="#D4A800", alpha=0.9),
             zorder=5)
 
