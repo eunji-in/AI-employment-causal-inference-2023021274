@@ -1,10 +1,5 @@
 # AI and Youth Employment: Causal Inference Analysis
 
-## Overview
-Final project for Causal Inference and AI.
-
-Research Question:
-"Does the advancement of generative AI causally increase youth employment anxiety?"
 
 ## Repository Structure
 
