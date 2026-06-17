@@ -101,19 +101,6 @@ for grp in ORDER:
             fontsize=8, color="#555", fontstyle="italic", zorder=1)
 
 # 화살표
-for cause, eff, pol, grp in EDGES:
-    cy = cy_map[cause]; ey = ey_map[eff]
-    col = ARR_COLOR[pol]
-    ax.annotate("",
-        xy=(0.5 - NW/2 - 0.01, ey),
-        xytext=(0.5 + NW/2 + 0.01 - 0.5, cy),  # X 조정은 아래서
-        arrowprops=dict(arrowstyle="-|>", color=col,
-                        lw=1.7, mutation_scale=15,
-                        connectionstyle="arc3,rad=0.0"),
-        zorder=2)
-
-# 화살표 재작성 (정확한 X 사용)
-# 원인 X=0.12, 결과 X=0.88
 X_CAUSE = 0.12
 X_EFF   = 0.88
 
